@@ -29,7 +29,7 @@ const AuthGuard: React.FC<GuardedRouteProps> = ({ component: Component, ...rest 
           // 🔴 Usuário deslogado: Redireciona para a página de Login
           <Redirect to="/login" />
         )
-      }
+      } 
     />
   );
 };

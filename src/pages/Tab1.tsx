@@ -30,5 +30,5 @@ const LoginPage: React.FC = () => {
     </IonPage>
   );
 };
-
+ 
 export default LoginPage;
