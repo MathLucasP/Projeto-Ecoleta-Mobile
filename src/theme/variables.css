@@ -1,6 +1,10 @@
 /* For information on how to create your own theme, please see:
 http://ionicframework.com/docs/theming/ */
 
+html, body, .ion-page {
+	background-color: #F5F5DC !important;
+}
+
 :root {
 	--ion-color-primary: #F9F6E8;
 	--ion-color-primary-rgb: 249,246,232;

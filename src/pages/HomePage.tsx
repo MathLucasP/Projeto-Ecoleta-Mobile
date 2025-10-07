@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import logo from '../assets/icon/logo.png';
+import { useHistory } from 'react-router-dom';
 // As importações a seguir são padrão em um projeto Ionic + React.
 // A falha de resolução é uma limitação do ambiente de execução e não do código em si.
 import {
@@ -19,12 +20,18 @@ import {
   IonGrid,
   IonRow,
   IonCol,
+  IonTitle,
   IonTabBar,
   IonTabButton,
   IonApp,
   IonRouterOutlet,
+  IonModal, // 💡 Importante: IonModal
+  IonInput, // Para os campos do formulário
+  IonToast, // Para exibir mensagens de sucesso/erro
+  IonSpinner,
   setupIonicReact
 } from '@ionic/react';
+
 import { IonReactRouter } from '@ionic/react-router';
 import { Redirect, Route } from 'react-router-dom';
 import {
@@ -36,7 +43,8 @@ import {
   peopleOutline,
   cubeOutline,
   star,
-  arrowForwardOutline
+  arrowForwardOutline,
+  closeOutline
 } from 'ionicons/icons';
 
 // --- Configuração Inicial do Ionic ---
@@ -72,12 +80,18 @@ const mockColetores: Coletor[] = [
   { id: 2, nome: 'Mariana Silva', afiliacaoDesde: 2021, avaliacao: 5 },
   { id: 3, nome: 'EcoService SP', afiliacaoDesde: 2019, avaliacao: 4 },
   { id: 4, nome: 'João Coletas', afiliacaoDesde: 2023, avaliacao: 3.5 },
+  { id: 5, nome: 'Lucas Coleta', afiliacaoDesde: 2008, avaliacao: 5 },
+  { id: 6, nome: 'Murilo Liro', afiliacaoDesde: 2014, avaliacao: 2.5 },
+  { id: 7, nome: 'Gustavo Coletor', afiliacaoDesde: 2018, avaliacao: 4 },
+  { id: 8, nome: 'Pietro de Óleo', afiliacaoDesde: 2020, avaliacao: 5 },
 ];
 
 // --- Cores e Estilos Customizados ---
 const styles = {
   primaryGreen: '#387E5E',
+  primaryCream: "#F5F5DC",
   secondaryYellow: '#D2A03C',
+  secondaryGreen: '#1c3a1aff',
   starGold: '#FFC700',
   locationInput: {
     '--background': '#ffffff',
@@ -135,32 +149,155 @@ const RatingStars: React.FC<{ rating: number }> = ({ rating }) => {
 };
 
 // --- Componente Card do Coletor ---
-const ColetorCard: React.FC<{ coletor: Coletor }> = ({ coletor }) => (
-  <IonCard
-    style={{
-      minWidth: '180px',
-      maxWidth: '180px',
-      borderRadius: '10px',
-      margin: 0,
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
-    }}
-  >
-    <IonCardContent style={{ padding: '15px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-        <IonAvatar style={{ width: '40px', height: '40px', marginRight: '10px' }}>
-          <IonIcon icon={personCircle} style={{ fontSize: '40px', color: '#ccc' }} />
-        </IonAvatar>
-        <div style={{ flexGrow: 1 }}>
-          <p style={{ fontWeight: 'bold', margin: 0, fontSize: '0.95rem' }}>{coletor.nome}</p>
-          <p style={{ margin: 0, fontSize: '0.75rem', color: '#666' }}>
-            Afiliado desde {coletor.afiliacaoDesde}
-          </p>
-        </div>
-      </div>
-      <RatingStars rating={coletor.avaliacao} />
-    </IonCardContent>
-  </IonCard>
-);
+const ColetorCard: React.FC<{ coletor: Coletor, onClick: () => void }> = ({ coletor, onClick }) => {
+  return (
+    <IonCard
+      onClick={onClick} // ⬅️ NOVO: Adiciona a função de clique
+      style={{
+        minWidth: '200px',
+        margin: '0',
+        borderRadius: '15px',
+        boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+        cursor: 'pointer', // Indica que é clicável
+      }}
+    >
+      <IonCardContent style={{ padding: '15px' }}>
+        <IonItem lines="none" style={{ '--padding-start': '0', '--inner-padding-end': '0' }}>
+          <IonAvatar slot="start" style={{ width: '45px', height: '45px' }}>
+            {/* Imagem de placeholder simples */}
+            <img
+              src={`https://placehold.co/45x45/F5F5DC/223E2A?text=${coletor.nome.charAt(0)}`}
+              alt={`Avatar de ${coletor.nome}`}
+              onError={(e: any) => { e.target.src = 'https://placehold.co/45x45/F5F5DC/223E2A?text=U'; }}
+            />
+          </IonAvatar>
+          <IonLabel>
+            <h2 style={{ fontSize: '1rem', fontWeight: 'bold' }}>{coletor.nome}</h2>
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: '3px' }}>
+              <IonIcon icon={star} style={{ color: styles.secondaryYellow, fontSize: '0.8rem', marginRight: '3px' }} />
+              <p style={{ margin: '0', fontSize: '0.8rem', color: '#666' }}>{coletor.avaliacao.toFixed(1)}</p>
+            </div>
+          </IonLabel>
+        </IonItem>
+      </IonCardContent>
+    </IonCard>
+  );
+};
+
+interface LoginModalContentProps {
+    onClose: () => void;
+    onLoginSuccess: () => void;
+}
+
+const LoginModalContent: React.FC<LoginModalContentProps> = ({ onClose, onLoginSuccess }) => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [showToast, setShowToast] = useState(false);
+
+    const handleLogin = async () => {
+        if (!email || !password) {
+            alert('Por favor, preencha todos os campos.'); // Usando alert apenas para debug rápido. Use IonToast em produção.
+            return;
+        }
+
+        setIsLoading(true);
+        // Simulação de chamada de API de Login
+        await new Promise(resolve => setTimeout(resolve, 1500)); 
+        setIsLoading(false);
+
+        // Lógica de autenticação (AQUI VOCÊ INTEGRARÁ COM FIREBASE/BACKEND)
+        if (email === 'coletor@exemplo.com' && password === '123456') {
+            setShowToast(true);
+            onLoginSuccess();
+            onClose();
+        } else {
+            alert('Credenciais inválidas. Tente novamente.');
+        }
+    };
+
+    const ColetorCard: React.FC<{ coletor: Coletor }> = ({ coletor }) => (
+    <IonCard style={{ minWidth: '250px', margin: '0 10px 0 0', boxShadow: 'none', border: '1px solid #eee' }}>
+      <IonCardContent style={{ padding: '15px' }}>
+        <h3 style={{ fontSize: '1rem', fontWeight: 'bold', margin: '0 0 5px 0', color: styles.primaryGreen }}>
+          {coletor.nome}
+        </h3>
+        <p style={{ fontSize: '0.8rem', color: '#666' }}>
+          Desde {coletor.afiliacaoDesde}
+        </p>
+        <IonItem lines="none" style={{ '--padding-start': '0', '--inner-padding-end': '0' }}>
+          <IonIcon icon={star} style={{ color: styles.secondaryYellow, marginRight: '5px' }} />
+          <IonLabel style={{ fontSize: '0.9rem', fontWeight: '600' }}>
+            {coletor.avaliacao}
+          </IonLabel>
+          <IonButton fill="clear" size="small" style={{ '--padding-end': '0', '--color': styles.primaryGreen }}>
+             Ver Perfil
+          </IonButton>
+        </IonItem>
+      </IonCardContent>
+    </IonCard>
+  );
+
+    return (
+        <IonPage>
+            <IonHeader>
+                <IonToolbar>
+                    <IonTitle style={{ color: styles.primaryGreen, fontWeight: 'bold' }}>
+                        Acessar Conta
+                    </IonTitle>
+                    <IonButtons slot="end">
+                        <IonButton onClick={onClose} fill="clear">
+                            <IonIcon icon={closeOutline} slot="icon-only" />
+                        </IonButton>
+                    </IonButtons>
+                </IonToolbar>
+            </IonHeader>
+            <IonContent className="ion-padding" fullscreen>
+                <div style={{ padding: '20px 0' }}>
+                    
+                    <IonInput 
+                        label="E-mail" 
+                        type="email" 
+                        fill="outline" 
+                        labelPlacement="stacked"
+                        value={email}
+                        onIonInput={(e) => setEmail(e.detail.value!)}
+                        style={{ marginBottom: '15px' }} 
+                    />
+                    <IonInput 
+                        label="Senha" 
+                        type="password" 
+                        fill="outline" 
+                        labelPlacement="stacked"
+                        value={password}
+                        onIonInput={(e) => setPassword(e.detail.value!)}
+                        style={{ marginBottom: '25px' }} 
+                    />
+                    
+                    <IonButton 
+                        expand="block" 
+                        onClick={handleLogin}
+                        disabled={isLoading}
+                        style={{ '--background': styles.primaryGreen }}
+                    >
+                        {isLoading ? <IonSpinner name="dots" /> : 'Acessar Plataforma'}
+                    </IonButton>
+
+                    <IonButton expand="block" fill="clear" style={{ marginTop: '10px' }}>
+                        Não tenho conta. Criar Cadastro
+                    </IonButton>
+                </div>
+                <IonToast
+                    isOpen={showToast}
+                    onDidDismiss={() => setShowToast(false)}
+                    message="Login realizado com sucesso!"
+                    duration={2000}
+                    color="success"
+                />
+            </IonContent>
+        </IonPage>
+    );
+};
 
 // --- Componente Principal da Página Home (com lógica ViaCEP) ---
 const HomePage: React.FC = () => {
@@ -168,6 +305,20 @@ const HomePage: React.FC = () => {
   const [address, setAddress] = React.useState<CEPAddress | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+
+  
+  // 1. Estado para controlar a abertura do Modal
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  // 2. Simulação do estado de autenticação (trocar pelo contexto real depois)
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+   // ⬅️ NOVO: Chamar o Hook para ter acesso ao objeto de navegação
+  const history = useHistory(); 
+  
+  // ⬅️ CORRIGIDO: Função para navegar para o perfil do coletor. USANDO /app/coletor/:id
+  const navigateToColetorProfile = (id: number) => {
+    history.push(`/app/coletor/${id}`);
+  };
 
   // Função Simples para formatação de CEP (Masking)
   const formatCep = (value: string) => {
@@ -238,7 +389,8 @@ const HomePage: React.FC = () => {
     setCep(formattedValue);
     
     // Tenta buscar o endereço somente se o CEP completo foi digitado
-    if (formattedValue.replace(/\D/g, '').length === 8) {
+    if (formattedValue.replace(/\D/g, '').
+    length === 8) {
       searchCep(formattedValue);
     } else {
       setAddress(null);
@@ -251,7 +403,7 @@ const HomePage: React.FC = () => {
     <IonPage>
       {/* --- 1. Header (Cabeçalho) --- */}
       <IonHeader>
-        <IonToolbar style={{ '--background': 'transparent' }}>
+        <IonToolbar style={{ '--background': styles.secondaryGreen }}>
           {/* Botão de Menu */}
           <IonButtons slot="start">
             <IonMenuButton>
@@ -272,20 +424,39 @@ const HomePage: React.FC = () => {
             textTransform: 'uppercase',
             fontWeight: 'bold',
             fontSize: '0.8rem',
-            color: styles.primaryGreen
+            color: styles.primaryGreen,
+            backgroundColor: styles.primaryCream
           }}>
             HOME
           </div>
 
           {/* Ícone de Perfil */}
-          <IonButtons slot="end">
-            <IonIcon icon={personCircle} style={{ color: styles.primaryGreen, fontSize: '2rem' }} />
-          </IonButtons>
+          <div slot="end">
+            {isLoggedIn ? (
+                <IonAvatar onClick={() => alert('Abrir Perfil')}>
+                    {/* Imagem do usuário logado */}
+                    <img src="https://i.pravatar.cc/150?img=1" alt="Usuário" />
+                </IonAvatar>
+            ) : (
+                // 3. Botão que abre o Modal de Login
+                <IonButton 
+                    onClick={() => setShowLoginModal(true)} 
+                    size="small"
+                    style={{ 
+                        '--background': styles.primaryGreen,
+                        '--border-radius': '20px',
+                        textTransform: 'none'
+                    }}
+                >
+                    Entrar
+                </IonButton>
+            )}
+          </div>
         </IonToolbar>
       </IonHeader>
 
       {/* --- 2. Content (Conteúdo Principal) --- */}
-      <IonContent fullscreen className="ion-padding">
+      <IonContent fullscreen className="ion-padding" style={{ '--background': styles.primaryCream }}>
         <div style={{ padding: '0 10px' }}>
           {/* Logo Placeholder (Garrafa e Palmas) */}
           <div style={{ display: 'flex', justifyContent: 'center', margin: '30px 0' }}>
@@ -353,7 +524,7 @@ const HomePage: React.FC = () => {
               <IonCol size="6" style={{ paddingRight: '5px' }}>
                 <IonCard style={{ '--background': styles.primaryGreen, color: '#fff', borderRadius: '10px', margin: 0 }}>
                   <IonCardContent style={{ padding: '20px 15px' }}>
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '10px' }}>ECOPONTOS</h2>
+                    <h2 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '10px' }}>ECOPONTOS</h2>
                     <IonButton
                       expand="full"
                       fill="clear"
@@ -376,7 +547,7 @@ const HomePage: React.FC = () => {
               <IonCol size="6" style={{ paddingLeft: '5px' }}>
                 <IonCard style={{ '--background': styles.secondaryYellow, color: '#fff', borderRadius: '10px', margin: 0 }}>
                   <IonCardContent style={{ padding: '20px 15px' }}>
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '10px' }}>COLETORES</h2>
+                    <h2 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '10px' }}>COLETORES</h2>
                     <IonButton
                       expand="full"
                       fill="clear"
@@ -404,61 +575,32 @@ const HomePage: React.FC = () => {
 
           <div style={styles.horizontalScroll}>
             {mockColetores.map((coletor) => (
-              <ColetorCard key={coletor.id} coletor={coletor} />
+              // ⬅️ CORRIGIDO: Agora usa a rota dinâmica /app/coletor/:id
+              <ColetorCard 
+                key={coletor.id} 
+                coletor={coletor} 
+                onClick={() => navigateToColetorProfile(coletor.id)} 
+              />
             ))}
           </div>
         </div>
       </IonContent>
+      <IonModal 
+          isOpen={showLoginModal} 
+          onDidDismiss={() => setShowLoginModal(false)}
+          // 💡 Para mobile, geralmente usamos 'presentingElement' para tela cheia
+          presentingElement={undefined} 
+          // Animação de entrada/saída (opcional, mas recomendado para um bom UX)
+          swipeToClose={true}
+      >
+          {/* 6. Conteúdo do Modal: O formulário de Login */}
+          <LoginModalContent 
+            onClose={() => setShowLoginModal(false)}
+            onLoginSuccess={() => setIsLoggedIn(true)} // Atualiza o estado da Home
+          />
+      </IonModal>
     </IonPage>
   );
 };
 
-// --- Componente Raiz do Aplicativo (Roteador e Tabs) ---
-// Este componente engloba a aplicação e define o roteamento global.
-const App: React.FC = () => {
-  return (
-    <IonApp>
-      <IonReactRouter>
-        <IonRouterOutlet>
-          {/* Rotas principais */}
-          <Route exact path="/home" component={HomePage} />
-          
-          {/* Rotas Placeholder para os botões da barra inferior */}
-          <Route exact path="/perfil"> <HomePage /> </Route>
-          <Route exact path="/mapa"> <HomePage /> </Route>
-          <Route exact path="/coleta"> <HomePage /> </Route>
-
-          {/* Rota padrão */}
-          <Route exact path="/"> <Redirect to="/home" /> </Route>
-        </IonRouterOutlet>
-
-        {/* --- 5. Footer/Tabs (Barra de Navegação Inferior) --- */}
-        <IonTabBar slot="bottom" style={{ '--background': '#fff', borderTop: '1px solid #eee' }}>
-            
-            {/* Botão Perfil */}
-            <IonTabButton tab="perfil" href="/perfil">
-                <IonIcon icon={peopleOutline} />
-            </IonTabButton>
-
-            {/* Botão Home - Estilo ativo fixo para visualização na Home */}
-            <IonTabButton tab="home" href="/home">
-                <IonIcon icon={homeOutline} style={styles.activeHomeIcon} />
-            </IonTabButton>
-            
-            {/* Botão Mapa */}
-            <IonTabButton tab="mapa" href="/mapa">
-                <IonIcon icon={mapOutline} />
-            </IonTabButton>
-
-            {/* Botão Coleta */}
-            <IonTabButton tab="coleta" href="/coleta">
-                <IonIcon icon={cubeOutline} />
-            </IonTabButton>
-        </IonTabBar>
-
-      </IonReactRouter>
-    </IonApp>
-  );
-};
- 
 export default HomePage;
