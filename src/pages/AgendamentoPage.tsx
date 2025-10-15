@@ -29,9 +29,7 @@ import {
 } from '@ionic/react';
 import { menu, locationOutline, calendarOutline, timeOutline, checkmarkCircleOutline, personCircleOutline, star } from 'ionicons/icons';
 
-// NOTA: Conforme sua solicitação, esta interface e dados (mockColetores)
-// deveriam ser importados de 'mockData.ts'. Eles são mantidos aqui
-// apenas para garantir que o código seja auto-contido e compilável.
+
 interface Coletor {
     id: string;
     nome: string;
@@ -45,12 +43,13 @@ const mockColetores: Coletor[] = [
     { id: '2', nome: 'Maria Recicla Fácil', avaliacao: 4.5, afiliacaoDesde: 2021, avatarUrl: 'https://placehold.co/40x40/223E2A/E2B633?text=M' },
     { id: '3', nome: 'Pedro Ambiental', avaliacao: 4.9, afiliacaoDesde: 2023, avatarUrl: 'https://placehold.co/40x40/223E2A/E2B633?text=P' },
 ];
-// --- FIM MOCK TEMPORÁRIO PARA EXECUÇÃO ---
+
 
 // Estilos
 const styles = {
-    primaryGreen: '#223E2A',
-    buttonColor: '#E2B633', 
+    primaryGreen: '#387E5E',
+    buttonColor: '#E2B633',
+    primaryCream: "#F5F5DC", 
     backgroundColor: '#F9F6E8', // Primary
 };
 
@@ -221,13 +220,13 @@ const AgendamentoPage: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar style={{ '--background': styles.primaryGreen }}>
           <IonButtons slot="start">
             <IonMenuButton>
                 <IonIcon icon={menu} style={{ color: styles.primaryGreen }} />
             </IonMenuButton>
           </IonButtons>
-          <IonTitle style={{ color: styles.primaryGreen, fontWeight: 'bold' }}>
+          <IonTitle style={{ color: styles.primaryCream, fontWeight: 'bold' }}>
             Agendamento de Coleta
           </IonTitle>
         </IonToolbar>
