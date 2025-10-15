@@ -29,8 +29,9 @@ import '@ionic/react/css/display.css';
 // Importa o componente das páginas
 import HomePage from './pages/HomePage';
 import MapPage from './pages/MapPage';
-import PerfilPage from './pages/PerfilPage'; // Vou assumir Tab2 como a rota '/coleta'
-import ColetorProfilePage from './pages/ColetorProfilePage'; // Página de perfil
+import PerfilPage from './pages/PerfilPage';
+import ColetorProfilePage from './pages/ColetorProfilePage';
+import AgendamentoPage from './pages/AgendamentoPage';
 
 // Define a configuração inicial do Ionic para React
 setupIonicReact();
@@ -54,7 +55,9 @@ const App: React.FC = () => (
           <Route path="/app/home" component={HomePage} exact={true} /> 
           <Route path="/app/mapa" component={MapPage} exact={true} /> 
           <Route path="/app/perfil" component={PerfilPage} exact={true} /> 
-          <Route path="/app/coletor/:id" component={ColetorProfilePage} exact={true} /> 
+          <Route path="/app/agendamento" component={AgendamentoPage} exact={true} /> 
+          <Route path="/app/coletor/:id" component={ColetorProfilePage} exact={true} />
+          
           
           {/* Rota genérica para Perfil (caso o usuário clique no botão da tab bar) */}
           <Route path="/app/coletor" exact={true}>
@@ -86,9 +89,9 @@ const App: React.FC = () => (
             <IonLabel>Mapa</IonLabel>
           </IonTabButton>
 
-          <IonTabButton tab="coleta" href="/app/coleta">
+          <IonTabButton tab="agendamento" href="/app/agendamento">
             <IonIcon icon={cubeOutline} />
-            <IonLabel>Coleta</IonLabel>
+            <IonLabel>Agendamento</IonLabel>
           </IonTabButton>
 
           

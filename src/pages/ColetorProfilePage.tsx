@@ -1,6 +1,5 @@
 import React from 'react';
-// ✅ Importamos o useParams para ler o ID da URL
-import { useParams, useHistory } from 'react-router-dom'; 
+import { useParams, useHistory } from 'react-router-dom';
 import {
   IonPage,
   IonContent,
@@ -10,27 +9,21 @@ import {
   IonIcon,
   IonButtons,
   IonBackButton,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardSubtitle,
+  IonCardContent,
+  IonButton,
   IonAvatar,
   IonItem,
   IonLabel,
-  IonGrid,
-  IonRow,
-  IonCol,
   IonText,
-  IonCard,
-  IonCardContent,
-  IonButton,
-  setupIonicReact,
-  IonChip,
+  setupIonicReact
 } from '@ionic/react';
-import {
-  star,
-  cubeOutline,
-  calendarOutline,
-  mailOutline,
-  callOutline,
-  locateOutline,
-} from 'ionicons/icons';
+import { star, callOutline, mailOutline, calendarOutline, locationOutline } from 'ionicons/icons';
+// 💡 Importa a interface e o utilitário de busca de um arquivo central
+import { Coletor, findColetorById } from '../data/mockData';
 
 // --- Configuração Inicial do Ionic ---
 setupIonicReact();
@@ -38,182 +31,60 @@ setupIonicReact();
 // --- Estilos Compartilhados ---
 const styles = {
   primaryGreen: '#387E5E', // Cor principal do tema (verde)
-  lightBeige: '#F5F5DC', // Fundo claro
   secondaryYellow: '#D2A03C', // Cor de destaque (amarelo/terciário)
+  lightBeige: '#F5F5DC', // Fundo claro
 };
 
-// --- Interfaces TypeScript ---
-interface Coletor {
-  id: number;
-  nome: string;
-  afiliacaoDesde: number;
-  avaliacao: number; // Média de 1 a 5
-  totalColetas: number;
-  bio: string;
-  telefone: string;
-  email: string;
-  especialidade: string; // Novo campo para o card local
+// Interface para os parâmetros da URL
+interface ColetorProfileParams {
+  id: string; // O ID virá como string da URL
 }
 
-// Mock de dados de coletores (autocontido na página)
-const mockColetores: Coletor[] = [
-  {
-    id: 1,
-    nome: 'Carlos Andrade',
-    afiliacaoDesde: 2020,
-    avaliacao: 4.5,
-    totalColetas: 152,
-    bio: 'Especializado na coleta de resíduos orgânicos para compostagem e pequenas quantidades de eletrônicos. Atendo a região central.',
-    telefone: '(13) 98765-4321',
-    email: 'carlos.andrade@coleta.com',
-    especialidade: 'Orgânicos e Eletrônicos',
-  },
-  {
-    id: 2,
-    nome: 'Mariana Silva',
-    afiliacaoDesde: 2021,
-    avaliacao: 5.0,
-    totalColetas: 310,
-    bio: 'Equipe focada em plásticos, vidros e metais. Atendimento em toda a Baixada Santista. Retiradas agendadas via app.',
-    telefone: '(13) 99123-4567',
-    email: 'mariana.silva@coleta.com',
-    especialidade: 'Plástico e Vidro',
-  },
-  {
-    id: 3,
-    nome: 'EcoService SP',
-    afiliacaoDesde: 2019,
-    avaliacao: 4.0,
-    totalColetas: 78,
-    bio: 'Foco em lixo eletrônico (e-waste). Aceitamos pilhas, baterias e pequenos eletrodomésticos com responsabilidade ambiental.',
-    telefone: '(13) 98000-1122',
-    email: 'ecoservice@coleta.com',
-    especialidade: 'Lixo Eletrônico',
-  },
-  {
-    id: 4,
-    nome: 'João Coletas',
-    afiliacaoDesde: 2023,
-    avaliacao: 3.5,
-    totalColetas: 45,
-    bio: 'Coletor independente especializado em papelão e embalagens. Atendo bairros residenciais com agendamento prévio.',
-    telefone: '(13) 98888-7777',
-    email: 'joao.coletas@coleta.com',
-    especialidade: 'Papelão e Embalagens',
-  },
-];
-
-// --- Sub-Componente para o Card de Coletor Local ---
-interface MiniCardProps {
-  coletor: Coletor;
-  onNavigate: (id: number) => void;
-}
-
-const MiniColetorCard: React.FC<MiniCardProps> = ({ coletor, onNavigate }) => {
-  return (
-    <IonCard 
-      key={coletor.id} 
-      onClick={() => onNavigate(coletor.id)}
-      style={{ 
-        margin: '10px 0', 
-        borderRadius: '15px', 
-        overflow: 'hidden',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-        cursor: 'pointer'
-      }}
-    >
-      <IonItem lines="none" detail={true} style={{ '--padding-start': '10px', '--inner-padding-end': '10px' }}>
-        {/* Avatar */}
-        <IonAvatar slot="start" style={{ width: '45px', height: '45px', border: `2px solid ${styles.secondaryYellow}` }}>
-          <img
-            src={`https://placehold.co/45x45/${styles.secondaryYellow.substring(1)}/${styles.primaryGreen.substring(1)}?text=${coletor.nome.charAt(0)}`}
-            alt={`Avatar de ${coletor.nome}`}
-            onError={(e: any) => { e.target.src = `https://placehold.co/45x45/${styles.secondaryYellow.substring(1)}/${styles.primaryGreen.substring(1)}?text=U`; }}
-          />
-        </IonAvatar>
-
-        <IonLabel>
-          <h3 style={{ fontWeight: 'bold', color: styles.primaryGreen, fontSize: '1rem' }}>
-            {coletor.nome}
-          </h3>
-          {/* Estrelas de Avaliação */}
-          <div style={{ display: 'flex', alignItems: 'center', margin: '3px 0' }}>
-            <IonIcon icon={star} style={{ color: styles.secondaryYellow, marginRight: '3px', fontSize: '0.9rem' }} />
-            <IonText style={{ fontSize: '0.9rem', color: '#555' }}>
-              {coletor.avaliacao.toFixed(1)} ({coletor.totalColetas})
-            </IonText>
-          </div>
-        </IonLabel>
-        
-        {/* Chips de Especialidade */}
-        <IonChip style={{ 
-          backgroundColor: styles.primaryGreen, 
-          color: '#fff', 
-          fontSize: '0.7rem', 
-          fontWeight: '500',
-          height: '24px',
-          margin: 0
-        }}>
-          {coletor.especialidade}
-        </IonChip>
-      </IonItem>
-    </IonCard>
-  );
-};
-
-
-// --- Componente principal da Página de Perfil ---
 const ColetorProfilePage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const history = useHistory(); // Para navegar para outro perfil
-
-  // Converte o ID da URL (string) para número
+  const { id } = useParams<ColetorProfileParams>();
   const coletorId = parseInt(id, 10);
-  const coletor = mockColetores.find((c) => c.id === coletorId);
   
-  // Lista de coletores locais (excluindo o perfil atual)
-  const localColetores = mockColetores.filter((c) => c.id !== coletorId);
+  // Busca os dados usando a função utilitária
+  const coletor = findColetorById(coletorId);
+  const history = useHistory();
 
-  // Função de navegação para um novo perfil
-  const handleNavigateToColetor = (newId: number) => {
-    // Usa replace para que o botão de voltar funcione corretamente (navegação em cadeia)
-    history.replace(`/app/coletor/${newId}`);
-  };
-
-
+  // Caso o coletor não seja encontrado
   if (!coletor) {
-    // Página de Erro (manter a lógica de erro)
     return (
       <IonPage>
         <IonHeader>
           <IonToolbar style={{ '--background': styles.primaryGreen }}>
             <IonButtons slot="start">
-              <IonBackButton defaultHref="/app/home" style={{ color: '#fff' }} />
+              <IonBackButton defaultHref="/app/perfil" style={{ '--color': '#fff' }}/>
             </IonButtons>
-            <IonTitle style={{ color: '#fff' }}>Erro</IonTitle>
+            <IonTitle style={{ color: '#fff', fontWeight: 'bold' }}>Coletor Não Encontrado</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <IonContent className="ion-padding ion-text-center" fullscreen style={{ '--background': styles.lightBeige }}>
-          <h2 style={{ marginTop: '50px', color: styles.primaryGreen }}>Coletor Não Encontrado</h2>
-          <p style={{ color: '#666' }}>
-            O perfil que você está tentando acessar não existe.
-          </p>
-          <IonButton routerLink="/app/home" style={{ marginTop: '20px', '--background': styles.secondaryYellow, '--color': styles.primaryGreen, fontWeight: 'bold' }}>
-            Voltar para Home
+        <IonContent className="ion-padding ion-text-center" style={{ '--background': styles.lightBeige }}>
+          <h2 style={{ color: '#C5000F' }}>Erro 404</h2>
+          <p>O perfil do coletor com ID: {id} não foi encontrado.</p>
+          <IonButton onClick={() => history.replace('/app/perfil')}>
+              Voltar para Lista de Coletores
           </IonButton>
         </IonContent>
       </IonPage>
     );
   }
 
-  // Se o coletor foi encontrado, exibe o perfil
+  // Se o coletor for encontrado, exibe o perfil
+  const yearsAffiliated = new Date().getFullYear() - coletor.afiliacaoDesde;
+
+  // 🟢 NOVA FUNÇÃO: Redireciona para a página de agendamento com o ID do coletor na rota
+  const handleAgendar = () => {
+      history.push(`/app/agendamento/${coletor.id}`);
+  };
+
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar style={{ '--background': styles.primaryGreen }}>
           <IonButtons slot="start">
-            {/* Botão de voltar que retorna para a página anterior (Home ou Mapa) */}
-            <IonBackButton defaultHref="/app/home" style={{ color: '#fff' }} />
+            <IonBackButton defaultHref="/app/perfil" style={{ '--color': '#fff' }}/>
           </IonButtons>
           <IonTitle style={{ color: '#fff', fontWeight: 'bold' }}>
             Perfil do Coletor
@@ -222,98 +93,109 @@ const ColetorProfilePage: React.FC = () => {
       </IonHeader>
 
       <IonContent fullscreen style={{ '--background': styles.lightBeige }}>
-        {/* Seção Principal do Perfil */}
-        <div style={{ padding: '30px 20px', backgroundColor: styles.primaryGreen, color: '#fff' }}>
-          <div className="ion-text-center">
-            {/* Avatar do Coletor - Usando um placeholder simples */}
-            <IonAvatar style={{ width: '90px', height: '90px', margin: '0 auto 15px auto', border: `3px solid ${styles.secondaryYellow}` }}>
-              <img
-                src={`https://placehold.co/90x90/${styles.secondaryYellow.substring(1)}/${styles.primaryGreen.substring(1)}?text=${coletor.nome.charAt(0)}`}
+        
+        {/* --- Card de Cabeçalho do Perfil --- */}
+        <IonCard style={{ 
+            borderRadius: '0 0 25px 25px', 
+            margin: '0', 
+            padding: '20px',
+            background: `linear-gradient(135deg, ${styles.primaryGreen} 0%, #295F4A 100%)`, 
+            color: '#fff',
+            textAlign: 'center'
+        }}>
+            <IonAvatar style={{ width: '100px', height: '100px', margin: '0 auto 15px auto', border: `4px solid ${styles.secondaryYellow}` }}>
+              <img 
+                src={`https://placehold.co/100x100/${styles.secondaryYellow.substring(1)}/${styles.primaryGreen.substring(1)}?text=${coletor.nome.charAt(0)}`}
                 alt={`Avatar de ${coletor.nome}`}
-                onError={(e: any) => { e.target.src = `https://placehold.co/90x90/${styles.secondaryYellow.substring(1)}/${styles.primaryGreen.substring(1)}?text=U`; }}
               />
             </IonAvatar>
-            <h1 style={{ fontSize: '1.6rem', fontWeight: 'bold', margin: '0' }}>{coletor.nome}</h1>
 
-            {/* Avaliação */}
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '5px' }}>
-              <IonIcon icon={star} style={{ color: styles.secondaryYellow, marginRight: '5px', fontSize: '1.2rem' }} />
-              <IonText style={{ fontSize: '1.1rem', fontWeight: '500' }}>
-                {coletor.avaliacao.toFixed(1)} ({coletor.totalColetas} coletas)
-              </IonText>
-            </div>
-          </div>
-
-          <IonGrid style={{ marginTop: '20px' }}>
-            <IonRow>
-              <IonCol size="6" className="ion-text-center">
-                <IonIcon icon={calendarOutline} style={{ fontSize: '1.5rem', color: styles.secondaryYellow }} />
-                <p style={{ margin: '5px 0 0 0', fontSize: '0.8rem', opacity: 0.8 }}>Desde</p>
-                <p style={{ margin: '0', fontWeight: 'bold' }}>{coletor.afiliacaoDesde}</p>
-              </IonCol>
-              <IonCol size="6" className="ion-text-center">
-                <IonIcon icon={cubeOutline} style={{ fontSize: '1.5rem', color: styles.secondaryYellow }} />
-                <p style={{ margin: '5px 0 0 0', fontSize: '0.8rem', opacity: 0.8 }}>Total Coletas</p>
-                <p style={{ margin: '0', fontWeight: 'bold' }}>{coletor.totalColetas}</p>
-              </IonCol>
-            </IonRow>
-          </IonGrid>
-        </div>
-
-        {/* Detalhes e Contato */}
-        <div className="ion-padding">
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '10px', color: styles.primaryGreen }}>Sobre o Coletor</h2>
-          <p style={{ color: '#555', lineHeight: '1.5', marginBottom: '30px' }}>
-            {coletor.bio}
-          </p>
-
-          <IonCard style={{ margin: '0', boxShadow: 'none', border: '1px solid #ddd', borderRadius: '15px' }}>
-            <IonCardContent style={{ padding: '0' }}>
-              <IonItem lines="full">
-                <IonIcon icon={mailOutline} slot="start" style={{ color: styles.primaryGreen }} />
-                <IonLabel>
-                  <p style={{ fontSize: '0.9rem', color: '#777' }}>E-mail</p>
-                  <h3 style={{ fontSize: '1rem', fontWeight: '500', color: styles.primaryGreen }}>{coletor.email}</h3>
-                </IonLabel>
-              </IonItem>
-              <IonItem lines="none">
-                <IonIcon icon={callOutline} slot="start" style={{ color: styles.primaryGreen }} />
-                <IonLabel>
-                  <p style={{ fontSize: '0.9rem', color: '#777' }}>Telefone</p>
-                  <h3 style={{ fontSize: '1rem', fontWeight: '500', color: styles.primaryGreen }}>{coletor.telefone}</h3>
-                </IonLabel>
-              </IonItem>
-            </IonCardContent>
-          </IonCard>
-
-          <IonButton expand="block" style={{ marginTop: '30px', '--background': styles.secondaryYellow, '--color': styles.primaryGreen, fontWeight: 'bold', '--border-radius': '15px' }}>
-            Solicitar Coleta
-          </IonButton>
-        </div>
-        
-        {/* --- NOVO: Seção de Coletores Locais --- */}
-        {localColetores.length > 0 && (
-          <div className="ion-padding" style={{ paddingTop: '0px', paddingBottom: '30px' }}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', margin: '30px 0 15px 0', color: styles.primaryGreen, display: 'flex', alignItems: 'center' }}>
-                <IonIcon icon={locateOutline} style={{ fontSize: '1.4rem', marginRight: '8px' }}/>
-                Coletores Locais Próximos
-            </h2>
+            <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: '5px 0' }}>{coletor.nome}</h1>
             
-            {/* Renderiza o MiniColetorCard para cada coletor local */}
-            {localColetores.map((c) => (
-              <MiniColetorCard 
-                key={c.id} 
-                coletor={c} 
-                onNavigate={handleNavigateToColetor} 
-              />
-            ))}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '15px' }}>
+                <IonIcon icon={star} style={{ color: styles.secondaryYellow, marginRight: '5px' }} />
+                <IonText style={{ fontSize: '1.1rem', fontWeight: 'bold', color: styles.secondaryYellow }}>
+                    {coletor.avaliacao.toFixed(1)} / 5.0
+                </IonText>
+                <IonText style={{ fontSize: '0.9rem', marginLeft: '10px', opacity: 0.8 }}>
+                    ({coletor.totalColetas} coletas concluídas)
+                </IonText>
+            </div>
+            
+            <IonButton
+                expand="block"
+                onClick={handleAgendar}
+                style={{
+                    '--background': styles.secondaryYellow,
+                    '--color': styles.primaryGreen,
+                    '--border-radius': '10px',
+                    height: '40px',
+                    fontWeight: 'bold',
+                    textTransform: 'none',
+                    marginTop: '15px'
+                }}
+            >
+                Agendar Coleta com {coletor.nome.split(' ')[0]}
+            </IonButton>
+        </IonCard>
 
-            <p className="ion-text-center" style={{ fontSize: '0.8rem', color: '#888', marginTop: '20px' }}>
-                *Baseado em nossa área de cobertura simulada.
-            </p>
-          </div>
-        )}
-        
+        <div className="ion-padding">
+            {/* --- Seção de Biografia / Especialidade --- */}
+            <IonCard style={{ borderRadius: '15px', margin: '15px 0' }}>
+                <IonCardHeader>
+                    <IonCardTitle style={{ color: styles.primaryGreen, fontSize: '1.2rem', fontWeight: 'bold' }}>
+                        Sobre o Coletor
+                    </IonCardTitle>
+                    <IonCardSubtitle style={{ color: styles.secondaryYellow, fontWeight: '600' }}>
+                        {coletor.especialidade}
+                    </IonCardSubtitle>
+                </IonCardHeader>
+                <IonCardContent>
+                    <p style={{ color: '#555', lineHeight: '1.5' }}>
+                        {coletor.bio}
+                    </p>
+                </IonCardContent>
+            </IonCard>
+
+            {/* --- Detalhes de Contato e Afiliação --- */}
+            <IonCard style={{ borderRadius: '15px', margin: '15px 0' }}>
+                <IonItem lines="full">
+                    <IonIcon icon={callOutline} slot="start" color="primary" />
+                    <IonLabel>
+                        <p style={{ color: '#888' }}>Telefone</p>
+                        <h3 style={{ color: styles.primaryGreen, fontWeight: 'bold' }}>{coletor.telefone}</h3>
+                    </IonLabel>
+                </IonItem>
+                <IonItem lines="full">
+                    <IonIcon icon={mailOutline} slot="start" color="primary" />
+                    <IonLabel>
+                        <p style={{ color: '#888' }}>E-mail</p>
+                        <h3 style={{ color: styles.primaryGreen, fontWeight: 'bold' }}>{coletor.email}</h3>
+                    </IonLabel>
+                </IonItem>
+                <IonItem lines="none">
+                    <IonIcon icon={calendarOutline} slot="start" color="primary" />
+                    <IonLabel>
+                        <p style={{ color: '#888' }}>Afiliado desde</p>
+                        <h3 style={{ color: styles.primaryGreen, fontWeight: 'bold' }}>
+                            {coletor.afiliacaoDesde} ({yearsAffiliated} anos)
+                        </h3>
+                    </IonLabel>
+                </IonItem>
+                <IonItem lines="none">
+                    <IonIcon icon={locationOutline} slot="start" color="primary" />
+                    <IonLabel>
+                        <p style={{ color: '#888' }}>Localização (Simulada)</p>
+                        <h3 style={{ color: styles.primaryGreen, fontWeight: 'bold' }}>
+                            Lat: {coletor.lat.toFixed(4)}, Lng: {coletor.lng.toFixed(4)}
+                        </h3>
+                    </IonLabel>
+                </IonItem>
+            </IonCard>
+
+            <div style={{ height: '30px' }} /> {/* Espaço no final */}
+        </div>
+
       </IonContent>
     </IonPage>
   );

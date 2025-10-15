@@ -12,6 +12,8 @@ import {
   IonLoading,
 } from '@ionic/react';
 import { menu } from 'ionicons/icons';
+// 💡 Importa a interface e os dados mockados de um arquivo central
+import { Coletor, mockColetores } from '../data/mockData'; 
 
 // --- Configuração Inicial do Ionic ---
 setupIonicReact();
@@ -21,23 +23,6 @@ const styles = {
   primaryGreen: '#387E5E',
   lightBeige: '#F5F5DC',
 };
-
-// --- Interfaces TypeScript ---
-interface Coletor {
-  id: number;
-  nome: string;
-  lat: number;
-  lng: number;
-  avaliacao: number;
-}
-
-// Mock de dados dos coletores com coordenadas simuladas (Santos/SP)
-const mockColetores: Coletor[] = [
-  { id: 1, nome: 'Carlos Andrade', lat: -23.9610, lng: -46.3323, avaliacao: 4.5 },
-  { id: 2, nome: 'Mariana Silva', lat: -23.9690, lng: -46.3380, avaliacao: 5.0 },
-  { id: 3, nome: 'EcoService SP', lat: -23.9450, lng: -46.3300, avaliacao: 4.0 },
-  { id: 4, nome: 'João Coletas', lat: -23.9550, lng: -46.3450, avaliacao: 3.5 },
-];
 
 // --- Configuração do Google Maps ---
 // A chave deve ser fornecida pelo ambiente, mas para este ambiente de simulação, usaremos uma string vazia.
@@ -63,6 +48,7 @@ const MapPage: React.FC = () => {
 
     return new Promise<void>((resolve) => {
       const script = document.createElement('script');
+      // Adiciona o parâmetro 'libraries' para garantir que as libs necessárias sejam carregadas (ex: geometry, places)
       script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap`;
       script.async = true;
       script.defer = true;
@@ -81,6 +67,7 @@ const MapPage: React.FC = () => {
   // Função para inicializar o mapa e adicionar os marcadores
   const initializeMap = async () => {
     // Garante que o contêiner do mapa existe e o Google Maps está carregado
+    // A variável 'google' é global e injetada pelo script do Google Maps
     if (!mapRef.current || typeof google === 'undefined' || !google.maps.Map) {
       console.error("Contêiner do mapa não encontrado ou Google Maps não carregado.");
       setIsLoading(false);
@@ -92,11 +79,11 @@ const MapPage: React.FC = () => {
         const mapOptions: google.maps.MapOptions = {
             center: defaultCenter,
             zoom: 14, // Zoom padrão para uma vista local
-            mapTypeControl: false, // Esconde controle de tipo de mapa (Satélite, Rua)
-            streetViewControl: false, // Esconde Street View
-            fullscreenControl: false, // Esconde Fullscreen
-            zoomControl: true, // Mostra controle de Zoom
-            // mapId: MAP_ID, // Descomente e use seu ID se tiver um estilo personalizado
+            mapTypeControl: false, 
+            streetViewControl: false, 
+            fullscreenControl: false, 
+            zoomControl: true, 
+            // mapId: MAP_ID, 
         };
 
         // Cria a instância do mapa
@@ -132,6 +119,7 @@ const MapPage: React.FC = () => {
 
   // Adiciona marcadores para cada coletor
   const addCollectorMarkers = (currentMap: google.maps.Map) => {
+    // 💡 mockColetores agora vem do arquivo de dados
     mockColetores.forEach(coletor => {
         const marker = new google.maps.Marker({
             position: { lat: coletor.lat, lng: coletor.lng },
@@ -166,9 +154,10 @@ const MapPage: React.FC = () => {
   // Efeito principal para carregar o script e inicializar o mapa
   useEffect(() => {
     setIsLoading(true);
+    // Chamada para carregar o script do Google Maps
     loadGoogleMapsScript()
       .then(() => {
-        // Timeout para garantir que o DOM esteja pronto e o callback do script tenha sido executado
+        // Um pequeno delay garante que a função global 'initMap' foi totalmente processada pelo navegador
         setTimeout(initializeMap, 100); 
       })
       .catch(error => {

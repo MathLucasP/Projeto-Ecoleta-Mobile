@@ -18,6 +18,8 @@ import {
   setupIonicReact,
 } from '@ionic/react';
 import { star, locateOutline, menu } from 'ionicons/icons';
+// 💡 Importa a interface e os dados mockados de um arquivo central
+import { Coletor, mockColetores } from '../data/mockData';
 
 // --- Configuração Inicial do Ionic ---
 setupIonicReact();
@@ -28,28 +30,6 @@ const styles = {
   secondaryYellow: '#D2A03C', // Cor de destaque (amarelo/terciário)
   lightBeige: '#F5F5DC', // Fundo claro
 };
-
-// --- Interfaces TypeScript ---
-interface Coletor {
-  id: number;
-  nome: string;
-  afiliacaoDesde: number;
-  avaliacao: number; // Média de 1 a 5
-  totalColetas: number;
-  bio: string;
-  telefone: string;
-  email: string;
-  especialidade: string;
-}
-
-// Mock de dados de coletores (usamos os mesmos dados para consistência)
-const mockColetores: Coletor[] = [
-  { id: 1, nome: 'Carlos Andrade', afiliacaoDesde: 2020, avaliacao: 4.5, totalColetas: 152, bio: '...', telefone: '...', email: '...', especialidade: 'Orgânicos e Eletrônicos' },
-  { id: 2, nome: 'Mariana Silva', afiliacaoDesde: 2021, avaliacao: 5.0, totalColetas: 310, bio: '...', telefone: '...', email: '...', especialidade: 'Plástico e Vidro' },
-  { id: 3, nome: 'EcoService SP', afiliacaoDesde: 2019, avaliacao: 4.0, totalColetas: 78, bio: '...', telefone: '...', email: '...', especialidade: 'Lixo Eletrônico' },
-  { id: 4, nome: 'João Coletas', afiliacaoDesde: 2023, avaliacao: 3.5, totalColetas: 45, bio: '...', telefone: '...', email: '...', especialidade: 'Papelão e Embalagens' },
-];
-
 
 // --- Card de Coletor para a lista principal ---
 interface ColetorListCardProps {
@@ -156,6 +136,7 @@ const PerfilPage: React.FC = () => {
 
         {/* Lista de Coletores Locais */}
         <div>
+          {/* 💡 mockColetores agora vem do arquivo de dados */}
           {mockColetores.map((c) => (
             <ColetorListCard 
               key={c.id} 
@@ -166,7 +147,7 @@ const PerfilPage: React.FC = () => {
 
           {/* Mensagem de rodapé para simulação */}
           <p className="ion-text-center" style={{ fontSize: '0.8rem', color: '#888', marginTop: '30px' }}>
-              4 coletores encontrados na sua região.
+              {mockColetores.length} coletores encontrados na sua região.
           </p>
         </div>
         

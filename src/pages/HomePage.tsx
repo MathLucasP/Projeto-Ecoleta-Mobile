@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import logo from '../assets/icon/logo.png';
 import { useHistory } from 'react-router-dom';
 // As importações a seguir são padrão em um projeto Ionic + React.
-// A falha de resolução é uma limitação do ambiente de execução e não do código em si.
 import {
   IonPage,
   IonContent,
@@ -15,6 +14,7 @@ import {
   IonItem,
   IonLabel,
   IonCard,
+  IonText,
   IonCardContent,
   IonButton,
   IonGrid,
@@ -47,17 +47,17 @@ import {
   closeOutline
 } from 'ionicons/icons';
 
+import { Coletor, mockColetores } from '../data/mockData';
+
 // --- Configuração Inicial do Ionic ---
 // Geralmente feito no index.tsx, mas incluído aqui para ser autocontido.
 setupIonicReact();
 
 // --- Interfaces TypeScript ---
 // Estrutura de dados para um Coletor
-interface Coletor {
-  id: number;
-  nome: string;
-  afiliacaoDesde: number;
-  avaliacao: number; // 1 a 5
+interface ColetorCardProps {
+  coletor: Coletor;
+  onNavigate: (id: number) => void;
 }
 // Estrutura de dados para o retorno do ViaCEP
 interface CEPAddress {
@@ -74,24 +74,12 @@ interface CEPAddress {
   erro?: boolean;
 }
 
-// --- Dados Mockados ---
-const mockColetores: Coletor[] = [
-  { id: 1, nome: 'Carlos Andrade', afiliacaoDesde: 2020, avaliacao: 4.5 },
-  { id: 2, nome: 'Mariana Silva', afiliacaoDesde: 2021, avaliacao: 5 },
-  { id: 3, nome: 'EcoService SP', afiliacaoDesde: 2019, avaliacao: 4 },
-  { id: 4, nome: 'João Coletas', afiliacaoDesde: 2023, avaliacao: 3.5 },
-  { id: 5, nome: 'Lucas Coleta', afiliacaoDesde: 2008, avaliacao: 5 },
-  { id: 6, nome: 'Murilo Liro', afiliacaoDesde: 2014, avaliacao: 2.5 },
-  { id: 7, nome: 'Gustavo Coletor', afiliacaoDesde: 2018, avaliacao: 4 },
-  { id: 8, nome: 'Pietro de Óleo', afiliacaoDesde: 2020, avaliacao: 5 },
-];
-
 // --- Cores e Estilos Customizados ---
 const styles = {
   primaryGreen: '#387E5E',
   primaryCream: "#F5F5DC",
   secondaryYellow: '#D2A03C',
-  secondaryGreen: '#1c3a1aff',
+  secondaryGreen: '#387E5E',
   starGold: '#FFC700',
   locationInput: {
     '--background': '#ffffff',
@@ -149,36 +137,57 @@ const RatingStars: React.FC<{ rating: number }> = ({ rating }) => {
 };
 
 // --- Componente Card do Coletor ---
-const ColetorCard: React.FC<{ coletor: Coletor, onClick: () => void }> = ({ coletor, onClick }) => {
+const ColetorCard: React.FC<ColetorCardProps> = ({ coletor, onNavigate }) => {
+  const yearsAffiliated = new Date().getFullYear() - coletor.afiliacaoDesde;
+
   return (
-    <IonCard
-      onClick={onClick} // ⬅️ NOVO: Adiciona a função de clique
-      style={{
-        minWidth: '200px',
-        margin: '0',
-        borderRadius: '15px',
-        boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-        cursor: 'pointer', // Indica que é clicável
+    <IonCard 
+      style={{ 
+        minWidth: '220px', 
+        borderRadius: '15px', 
+        margin: '0', 
+        boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
+        backgroundColor: '#fff',
+        cursor: 'pointer'
       }}
+      onClick={() => onNavigate(coletor.id)}
     >
       <IonCardContent style={{ padding: '15px' }}>
-        <IonItem lines="none" style={{ '--padding-start': '0', '--inner-padding-end': '0' }}>
-          <IonAvatar slot="start" style={{ width: '45px', height: '45px' }}>
-            {/* Imagem de placeholder simples */}
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+          <IonAvatar style={{ width: '40px', height: '40px', marginRight: '10px' }}>
             <img
-              src={`https://placehold.co/45x45/F5F5DC/223E2A?text=${coletor.nome.charAt(0)}`}
+              src={`https://placehold.co/40x40/${styles.primaryGreen.substring(1)}/${styles.secondaryYellow.substring(1)}?text=${coletor.nome.charAt(0)}`}
               alt={`Avatar de ${coletor.nome}`}
-              onError={(e: any) => { e.target.src = 'https://placehold.co/45x45/F5F5DC/223E2A?text=U'; }}
             />
           </IonAvatar>
           <IonLabel>
-            <h2 style={{ fontSize: '1rem', fontWeight: 'bold' }}>{coletor.nome}</h2>
-            <div style={{ display: 'flex', alignItems: 'center', marginTop: '3px' }}>
-              <IonIcon icon={star} style={{ color: styles.secondaryYellow, fontSize: '0.8rem', marginRight: '3px' }} />
-              <p style={{ margin: '0', fontSize: '0.8rem', color: '#666' }}>{coletor.avaliacao.toFixed(1)}</p>
-            </div>
+            <h3 style={{ fontWeight: 'bold', fontSize: '1rem', color: styles.primaryGreen }}>{coletor.nome}</h3>
+            <p style={{ fontSize: '0.75rem', color: '#888' }}>
+              Desde {coletor.afiliacaoDesde} ({yearsAffiliated} anos)
+            </p>
           </IonLabel>
-        </IonItem>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+          <div style={{ textAlign: 'center' }}>
+            <IonIcon icon={star} style={{ color: styles.secondaryYellow, fontSize: '1.2rem' }} />
+            <IonText style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', color: '#555' }}>
+              {coletor.avaliacao.toFixed(1)}
+            </IonText>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <IonText style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold', color: styles.primaryGreen }}>
+              {coletor.totalColetas}
+            </IonText>
+            <p style={{ margin: 0, fontSize: '0.7rem', color: '#888' }}>Coletas</p>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <IonText style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold', color: styles.primaryGreen, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+              {coletor.especialidade.split(' ')[0]}...
+            </IonText>
+            <p style={{ margin: 0, fontSize: '0.7rem', color: '#888' }}>Especialidade</p>
+          </div>
+        </div>
       </IonCardContent>
     </IonCard>
   );
@@ -573,14 +582,10 @@ const HomePage: React.FC = () => {
             Os Melhores Coletores
           </h2>
 
-          <div style={styles.horizontalScroll}>
+           <div style={styles.horizontalScroll}>
+            {/* 💡 mockColetores agora vem do arquivo de dados */}
             {mockColetores.map((coletor) => (
-              // ⬅️ CORRIGIDO: Agora usa a rota dinâmica /app/coletor/:id
-              <ColetorCard 
-                key={coletor.id} 
-                coletor={coletor} 
-                onClick={() => navigateToColetorProfile(coletor.id)} 
-              />
+              <ColetorCard key={coletor.id} coletor={coletor} onNavigate={navigateToColetorProfile} />
             ))}
           </div>
         </div>
