@@ -18,20 +18,40 @@ import {
   setupIonicReact,
 } from '@ionic/react';
 import { star, locateOutline, menu } from 'ionicons/icons';
-// 💡 Importa a interface e os dados mockados de um arquivo central
-import { Coletor, mockColetores } from '../data/mockData';
 
-// --- Configuração Inicial do Ionic ---
+
 setupIonicReact();
 
-// --- Estilos Compartilhados ---
+
 const styles = {
-  primaryGreen: '#387E5E', // Cor principal do tema (verde)
-  secondaryYellow: '#D2A03C', // Cor de destaque (amarelo/terciário)
-  lightBeige: '#F5F5DC', // Fundo claro
+  primaryGreen: '#387E5E', 
+  secondaryYellow: '#D2A03C',
+  lightBeige: '#F5F5DC', 
 };
 
-// --- Card de Coletor para a lista principal ---
+
+interface Coletor {
+  id: number;
+  nome: string;
+  afiliacaoDesde: number;
+  avaliacao: number; // Média de 1 a 5
+  totalColetas: number;
+  bio: string;
+  telefone: string;
+  email: string;
+  especialidade: string;
+}
+
+
+const mockColetores: Coletor[] = [
+  { id: 1, nome: 'Carlos Andrade', afiliacaoDesde: 2020, avaliacao: 4.5, totalColetas: 152, bio: '...', telefone: '...', email: '...', especialidade: 'Orgânicos e Eletrônicos' },
+  { id: 2, nome: 'Mariana Silva', afiliacaoDesde: 2021, avaliacao: 5.0, totalColetas: 310, bio: '...', telefone: '...', email: '...', especialidade: 'Plástico e Vidro' },
+  { id: 3, nome: 'EcoService SP', afiliacaoDesde: 2019, avaliacao: 4.0, totalColetas: 78, bio: '...', telefone: '...', email: '...', especialidade: 'Lixo Eletrônico' },
+  { id: 4, nome: 'João Coletas', afiliacaoDesde: 2023, avaliacao: 3.5, totalColetas: 45, bio: '...', telefone: '...', email: '...', especialidade: 'Papelão e Embalagens' },
+];
+
+
+
 interface ColetorListCardProps {
   coletor: Coletor;
   onNavigate: (id: number) => void;
@@ -52,7 +72,7 @@ const ColetorListCard: React.FC<ColetorListCardProps> = ({ coletor, onNavigate }
       }}
     >
       <IonItem lines="none" detail={true} style={{ '--padding-start': '10px', '--inner-padding-end': '10px' }}>
-        {/* Avatar */}
+
         <IonAvatar slot="start" style={{ width: '60px', height: '60px', border: `3px solid ${styles.primaryGreen}` }}>
           <img
             src={`https://placehold.co/60x60/${styles.primaryGreen.substring(1)}/${styles.secondaryYellow.substring(1)}?text=${coletor.nome.charAt(0)}`}
@@ -65,14 +85,14 @@ const ColetorListCard: React.FC<ColetorListCardProps> = ({ coletor, onNavigate }
           <h3 style={{ fontWeight: 'bold', color: styles.primaryGreen, fontSize: '1.1rem' }}>
             {coletor.nome}
           </h3>
-          {/* Estrelas de Avaliação */}
+
           <div style={{ display: 'flex', alignItems: 'center', margin: '3px 0' }}>
             <IonIcon icon={star} style={{ color: styles.secondaryYellow, marginRight: '5px', fontSize: '1rem' }} />
             <IonText style={{ fontSize: '0.9rem', color: '#555' }}>
               {coletor.avaliacao.toFixed(1)} ({coletor.totalColetas} coletas)
             </IonText>
           </div>
-          {/* Chips de Especialidade */}
+
           <IonChip style={{ 
             backgroundColor: styles.secondaryYellow, 
             color: styles.primaryGreen, 
@@ -90,11 +110,11 @@ const ColetorListCard: React.FC<ColetorListCardProps> = ({ coletor, onNavigate }
 };
 
 
-// --- Componente principal da Página de Perfil (Aba) ---
+
 const PerfilPage: React.FC = () => {
   const history = useHistory();
 
-  // Função para navegar para a página de detalhes do coletor
+
   const handleNavigateToColetor = (id: number) => {
     history.push(`/app/coletor/${id}`);
   };
@@ -104,7 +124,7 @@ const PerfilPage: React.FC = () => {
       <IonHeader>
         <IonToolbar style={{ '--background': styles.primaryGreen }}>
           <IonButtons slot="start">
-            {/* Botão de Menu para o menu lateral (se existir) */}
+
             <IonMenuButton>
                 <IonIcon icon={menu} style={{ color: '#fff' }} />
             </IonMenuButton>
@@ -117,7 +137,7 @@ const PerfilPage: React.FC = () => {
 
       <IonContent fullscreen className="ion-padding" style={{ '--background': styles.lightBeige }}>
         
-        {/* Título e ícone de localização */}
+
         <h1 style={{ 
             fontSize: '1.6rem', 
             fontWeight: 'bold', 
@@ -134,9 +154,8 @@ const PerfilPage: React.FC = () => {
             Encontre o profissional ou a empresa mais adequada para o seu tipo de resíduo.
         </p>
 
-        {/* Lista de Coletores Locais */}
+
         <div>
-          {/* 💡 mockColetores agora vem do arquivo de dados */}
           {mockColetores.map((c) => (
             <ColetorListCard 
               key={c.id} 
@@ -145,9 +164,9 @@ const PerfilPage: React.FC = () => {
             />
           ))}
 
-          {/* Mensagem de rodapé para simulação */}
+
           <p className="ion-text-center" style={{ fontSize: '0.8rem', color: '#888', marginTop: '30px' }}>
-              {mockColetores.length} coletores encontrados na sua região.
+              4 coletores encontrados na sua região.
           </p>
         </div>
         

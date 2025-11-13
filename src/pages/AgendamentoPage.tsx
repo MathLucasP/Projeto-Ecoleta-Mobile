@@ -23,11 +23,10 @@ import {
   useIonToast,
   IonSpinner,
   IonCard,
-  IonCardContent,
   IonAvatar,
   IonNote
 } from '@ionic/react';
-import { menu, locationOutline, calendarOutline, timeOutline, checkmarkCircleOutline, personCircleOutline, star } from 'ionicons/icons';
+import { menu, locationOutline, calendarOutline, timeOutline, checkmarkCircleOutline, star } from 'ionicons/icons';
 
 
 interface Coletor {
@@ -50,10 +49,10 @@ const styles = {
     primaryGreen: '#387E5E',
     buttonColor: '#E2B633',
     primaryCream: "#F5F5DC", 
-    backgroundColor: '#F9F6E8', // Primary
+    backgroundColor: '#F9F6E8',
 };
 
-// Interface para o estado do formulário
+
 interface FormData {
   materialType: string;
   description: string;
@@ -62,17 +61,17 @@ interface FormData {
   number: string;
   complement: string;
   bairro: string; 
-  coletorId: string; // ID do coletor escolhido
+  coletorId: string; 
   date: string;
   time: string;
 }
 
-// Interface para os parâmetros da rota
+
 interface RouteParams {
     coletorId: string;
 }
 
-// Componente simples para exibir o coletor escolhido/selecionado
+
 const ColetorDisplay: React.FC<{ coletor: Coletor }> = ({ coletor }) => (
     <IonCard style={{ marginBottom: '15px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
         <IonItem lines="none">
@@ -92,12 +91,12 @@ const ColetorDisplay: React.FC<{ coletor: Coletor }> = ({ coletor }) => (
 
 const AgendamentoPage: React.FC = () => {
   const history = useHistory();
-  // Captura o 'coletorId' da URL, se existir (ex: /coleta/1)
+ 
   const { coletorId: routeColetorId } = useParams<RouteParams>();
   const [present] = useIonToast();
 
   const initialColetorId = routeColetorId || '';
-  // Tenta encontrar o coletor se um ID veio da rota
+  
   const initialColetor = mockColetores.find(c => c.id === initialColetorId);
 
   const [formData, setFormData] = useState<FormData>({
@@ -108,7 +107,7 @@ const AgendamentoPage: React.FC = () => {
     number: '',
     complement: '',
     bairro: '',
-    coletorId: initialColetorId, // Usa o ID da rota ou vazio
+    coletorId: initialColetorId, 
     date: new Date().toISOString(),
     time: new Date().toISOString(),
   });
@@ -118,32 +117,31 @@ const AgendamentoPage: React.FC = () => {
   const [selectedColetor, setSelectedColetor] = useState<Coletor | undefined>(initialColetor);
 
 
-  // Efeito para manter o ColetorDisplay atualizado quando o usuário usa o IonSelect
   useEffect(() => {
-    // Só atualiza se NÃO veio um ID fixo pela rota (ou seja, se o usuário está selecionando)
+    
     if (!routeColetorId) {
         setSelectedColetor(mockColetores.find(c => c.id === formData.coletorId));
     }
   }, [formData.coletorId, routeColetorId]);
 
 
-  // Função genérica para lidar com a mudança de inputs
+ 
   const handleInputChange = (e: CustomEvent) => {
     const target = e.target as HTMLInputElement;
     setFormData({ ...formData, [target.name]: target.value });
   };
 
-  // Função para lidar com a mudança do seletor de material
+  
   const handleSelectChange = (e: CustomEvent) => {
     setFormData({ ...formData, materialType: e.detail.value });
   };
 
-  // Função para lidar com a mudança de data e hora
+  
   const handleDateTimeChange = (key: keyof FormData) => (e: CustomEvent) => {
     setFormData({ ...formData, [key]: e.detail.value || '' });
   };
 
-  // --- Lógica de integração com ViaCEP ---
+  
   const isValidCep = (cep: string) => /^\d{8}$/.test(cep.replace(/\D/g, ''));
   
   const fetchAddressByCep = async (cep: string) => {
@@ -180,9 +178,9 @@ const AgendamentoPage: React.FC = () => {
         fetchAddressByCep(cep);
     }
   };
-  // --- FIM da Lógica ViaCEP ---
+  
 
-  // Lógica de agendamento (Simulação)
+  
   const handleSchedule = () => {
     if (!formData.materialType || !formData.date || !formData.time || !formData.street || !formData.bairro || !formData.coletorId) {
       present({
@@ -194,7 +192,7 @@ const AgendamentoPage: React.FC = () => {
     }
 
     setLoading(true);
-    // Simulação de chamada de API/Firestore
+    
     setTimeout(() => {
         console.log('Dados do Agendamento:', formData);
         setLoading(false);
@@ -206,14 +204,14 @@ const AgendamentoPage: React.FC = () => {
           icon: checkmarkCircleOutline
         });
 
-        // Limpa o formulário e volta para a Home (opcional)
+        
         history.replace('/home'); 
 
     }, 1500); 
   };
 
   const addressFieldsDisabled = isCepLoading || loading;
-  // Desabilita o campo de seleção de coletor se ele foi escolhido via perfil
+  
   const isColetorFieldDisabled = !!routeColetorId || loading; 
 
 
@@ -238,12 +236,12 @@ const AgendamentoPage: React.FC = () => {
             Coletor Selecionado *
         </h3>
 
-        {/* --- SEÇÃO DE SELEÇÃO/EXIBIÇÃO DO COLETOR --- */}
+        
         {routeColetorId && selectedColetor ? (
-            // 🟢 Coletor pré-selecionado (veio do perfil)
+            
             <ColetorDisplay coletor={selectedColetor} />
         ) : (
-            // 🟡 Seletor de Coletor (veio da TabBar ou seleção manual)
+            
             <IonItem style={{ marginBottom: '15px', borderRadius: '10px' }}>
                 <IonLabel position="stacked" style={{ color: styles.primaryGreen, fontWeight: '500' }}>Escolher Coletor</IonLabel>
                 <IonSelect
@@ -265,11 +263,11 @@ const AgendamentoPage: React.FC = () => {
                         Você deve selecionar um coletor.
                     </IonNote>
                 )}
-                {/* Exibe o card do coletor selecionado manualmente */}
+                
                 {selectedColetor && <ColetorDisplay coletor={selectedColetor} />}
             </IonItem>
         )}
-        {/* --- FIM SEÇÃO COLETOR --- */}
+        
         
         <h2 style={{ fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '20px', color: styles.primaryGreen }}>
           Detalhes da Sua Coleta
@@ -277,7 +275,7 @@ const AgendamentoPage: React.FC = () => {
 
         <IonList lines="full" style={{ background: 'transparent' }}>
           
-          {/* Tipo de Material */}
+          
           <IonItem style={{ marginBottom: '10px', borderRadius: '10px' }}>
             <IonLabel position="stacked" style={{ color: styles.primaryGreen, fontWeight: '500' }}>Tipo de Material *</IonLabel>
             <IonSelect
@@ -297,7 +295,7 @@ const AgendamentoPage: React.FC = () => {
             </IonSelect>
           </IonItem>
 
-          {/* Descrição */}
+          
           <IonItem style={{ marginBottom: '10px', borderRadius: '10px' }}>
             <IonLabel position="stacked" style={{ color: styles.primaryGreen, fontWeight: '500' }}>Detalhes da Coleta (Descrição e Volume)</IonLabel>
             <IonTextarea
@@ -314,7 +312,7 @@ const AgendamentoPage: React.FC = () => {
             Endereço de Retirada
           </h3>
           
-          {/* CEP - Adicionado onIonBlur para a busca */}
+          
           <IonItem style={{ marginBottom: '10px', borderRadius: '10px' }}>
             <IonIcon icon={locationOutline} slot="start" style={{ color: styles.primaryGreen }} />
             <IonInput 
@@ -332,7 +330,7 @@ const AgendamentoPage: React.FC = () => {
             {isCepLoading && <IonSpinner name="dots" slot="end" />}
           </IonItem>
           
-          {/* Rua/Avenida - Preenchido pelo CEP */}
+          
           <IonItem style={{ marginBottom: '10px', borderRadius: '10px' }}>
             <IonInput 
               label="Rua/Avenida *" 
@@ -344,7 +342,7 @@ const AgendamentoPage: React.FC = () => {
             />
           </IonItem>
           
-          {/* Bairro - Preenchido pelo CEP */}
+          
           <IonItem style={{ marginBottom: '10px', borderRadius: '10px' }}>
             <IonInput 
               label="Bairro *" 
@@ -356,7 +354,7 @@ const AgendamentoPage: React.FC = () => {
             />
           </IonItem>
 
-          {/* Número e Complemento */}
+          
           <div style={{ display: 'flex', gap: '10px' }}>
             <IonItem style={{ flex: 1, marginBottom: '10px', borderRadius: '10px' }}>
               <IonInput 
@@ -403,7 +401,7 @@ const AgendamentoPage: React.FC = () => {
             Data e Hora Preferenciais
           </h3>
           
-          {/* Data */}
+          
           <IonItem style={{ marginBottom: '10px', borderRadius: '10px' }}>
             <IonIcon icon={calendarOutline} slot="start" style={{ color: styles.primaryGreen }} />
             <IonLabel>Data da Coleta *</IonLabel>
@@ -420,7 +418,7 @@ const AgendamentoPage: React.FC = () => {
             </IonModal>
           </IonItem>
 
-          {/* Hora */}
+          
           <IonItem style={{ marginBottom: '25px', borderRadius: '10px' }}>
             <IonIcon icon={timeOutline} slot="start" style={{ color: styles.primaryGreen }} />
             <IonLabel>Hora Preferencial *</IonLabel>
@@ -438,7 +436,7 @@ const AgendamentoPage: React.FC = () => {
 
         </IonList>
 
-        {/* Botão de Agendar */}
+        
         <IonButton 
           expand="block" 
           onClick={handleSchedule}

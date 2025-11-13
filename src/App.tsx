@@ -1,15 +1,15 @@
 import React from 'react';
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route, useLocation } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, setupIonicReact, IonIcon, IonTabBar, IonTabButton, IonTabs, IonLabel } from '@ionic/react';
 import {
-  peopleOutline, // Usaremos este para Perfil
+  peopleOutline,
   homeOutline,
   mapOutline,
-  cubeOutline
+  cubeOutline,
+  personAddOutline
 } from 'ionicons/icons';
 import { IonReactRouter } from '@ionic/react-router';
 
-// Importa os estilos principais do Ionic
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
 
@@ -32,48 +32,60 @@ import MapPage from './pages/MapPage';
 import PerfilPage from './pages/PerfilPage';
 import ColetorProfilePage from './pages/ColetorProfilePage';
 import AgendamentoPage from './pages/AgendamentoPage';
+import SignUpPage from './pages/SignUpPage';
+import SignUpPersonalInfo from './pages/SignUpPersonalInfo';
+import SignUpAddress from './pages/SignUpAddress';
+import SignUpSuccess from './pages/SignUpSuccess';
 
-// Define a configuração inicial do Ionic para React
+// Importar páginas do dashboard do gerador
+import GeradorHomePage from './pages/GeradorHomePage';
+import GeradorHistoricoPage from './pages/GeradorHistoricoPage';
+import GeradorPerfilPage from './pages/GeradorPerfilPage';
+import GeradorConfiguracoesPage from './pages/GeradorConfiguracoesPage';
+import GeradorSolicitarColetaPage from './pages/GeradorSolicitarColetaPage';
+
 setupIonicReact();
 
-// --- Componente principal do Aplicativo (Roteamento) ---
-const App: React.FC = () => (
-  <IonApp>
-    <IonReactRouter>
-      
-      {/* 1. Rotas que NÃO FAZEM parte das abas (ex: Login, Cadastro, Detalhes Dinâmicos) */}
-      {/* 🟢 ROTA DINÂMICA CORRIGIDA: /app/coletor/:id */}
-      {/* Esta rota deve ficar FORA do IonTabs para garantir que o IonTabs desapareça em telas de detalhe */}
-      
-      {/* 2. O wrapper IonTabs para a navegação principal (as abas de navegação inferior) */}
-      <IonTabs>
+const AppContent: React.FC = () => {
+  const location = useLocation();
+  
+  // Verifica se está em uma página do gerador
+  const isGeradorPage = location.pathname.startsWith('/app/gerador-');
+  
+  return (
+    <IonTabs>
+      <IonRouterOutlet>
+        {/* Rotas das abas principais */}
+        <Route path="/app/home" component={HomePage} exact={true} /> 
+        <Route path="/app/mapa" component={MapPage} exact={true} /> 
+        <Route path="/app/perfil" component={PerfilPage} exact={true} /> 
+        <Route path="/app/agendamento" component={AgendamentoPage} exact={true} /> 
         
-        {/* Onde as páginas das abas são renderizadas */}
-        <IonRouterOutlet>
-          
-          {/* Rotas das abas (sem parâmetros dinâmicos) */}
-          <Route path="/app/home" component={HomePage} exact={true} /> 
-          <Route path="/app/mapa" component={MapPage} exact={true} /> 
-          <Route path="/app/perfil" component={PerfilPage} exact={true} /> 
-          <Route path="/app/agendamento" component={AgendamentoPage} exact={true} /> 
-          <Route path="/app/coletor/:id" component={ColetorProfilePage} exact={true} />
-          
-          
-          {/* Rota genérica para Perfil (caso o usuário clique no botão da tab bar) */}
-          <Route path="/app/coletor" exact={true}>
-          </Route>
+        {/* Rotas de SignUp - CORRIGIDAS com / no início */}
+        <Route path="/app/signup" component={SignUpPage} exact={true}/>
+        <Route path="/app/personal-info" component={SignUpPersonalInfo} exact={true} />
+        <Route path="/app/address" component={SignUpAddress} exact={true} />
+        <Route path="/app/success" component={SignUpSuccess} exact={true} />
+        
+        {/* Rota de perfil do coletor com parâmetro dinâmico */}
+        <Route path="/app/coletor/:id" component={ColetorProfilePage} exact={true} />
+        
+        {/* === ROTAS DO DASHBOARD DO GERADOR === */}
+        <Route path="/app/gerador-home" component={GeradorHomePage} exact={true} />
+        <Route path="/app/gerador-historico" component={GeradorHistoricoPage} exact={true} />
+        <Route path="/app/gerador-perfil" component={GeradorPerfilPage} exact={true} />
+        <Route path="/app/gerador-configuracoes" component={GeradorConfiguracoesPage} exact={true} />
+        <Route path="/app/gerador-solicitar" component={GeradorSolicitarColetaPage} exact={true} />
+        
+        {/* Redirecionamento padrão */}
+        <Route exact path="/app">
+          <Redirect to="/app/home" />
+        </Route>
+      </IonRouterOutlet>
 
-          {/* Rota de redirecionamento para garantir que ao acessar /app, vá para a Home */}
-          <Route exact path="/app">
-            <Redirect to="/app/home" />
-          </Route>
-          
-        </IonRouterOutlet>
-
-        {/* 3. A Tab Bar (Toolbar de baixo) que faz a navegação entre as abas */}
+      {/* Tab Bar - Só aparece se NÃO estiver em página do gerador */}
+      {!isGeradorPage && (
         <IonTabBar slot="bottom" style={{ '--background': '#fff', '--border-top': '1px solid #eee' }}>
-          
-          {/* 💡 Novo Botão Perfil Genérico (Substitui o botão "Coletor" estático) */}
           <IonTabButton tab="perfil" href="/app/perfil">
             <IonIcon icon={peopleOutline} />
             <IonLabel>Perfil</IonLabel>
@@ -94,15 +106,21 @@ const App: React.FC = () => (
             <IonLabel>Agendamento</IonLabel>
           </IonTabButton>
 
-          
+          {/* Botão de SignUp removido da tab bar - geralmente só aparece no modal/link */}
         </IonTabBar>
-      </IonTabs>
+      )}
+    </IonTabs>
+  );
+};
+
+const App: React.FC = () => (
+  <IonApp>
+    <IonReactRouter>
+      <AppContent />
       
-      {/* 4. Redirecionamento Inicial: Leva o usuário para a página principal das abas */}
       <Route exact path="/">
         <Redirect to="/app/home" />
       </Route>
-
     </IonReactRouter>
   </IonApp>
 );

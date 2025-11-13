@@ -22,33 +22,33 @@ import {
   setupIonicReact
 } from '@ionic/react';
 import { star, callOutline, mailOutline, calendarOutline, locationOutline } from 'ionicons/icons';
-// 💡 Importa a interface e o utilitário de busca de um arquivo central
+
 import { Coletor, findColetorById } from '../data/mockData';
 
-// --- Configuração Inicial do Ionic ---
+
 setupIonicReact();
 
-// --- Estilos Compartilhados ---
+
 const styles = {
-  primaryGreen: '#387E5E', // Cor principal do tema (verde)
-  secondaryYellow: '#D2A03C', // Cor de destaque (amarelo/terciário)
-  lightBeige: '#F5F5DC', // Fundo claro
+  primaryGreen: '#387E5E', 
+  secondaryYellow: '#D2A03C', 
+  lightBeige: '#F5F5DC',
 };
 
-// Interface para os parâmetros da URL
+
 interface ColetorProfileParams {
-  id: string; // O ID virá como string da URL
+  id: string; 
 }
 
 const ColetorProfilePage: React.FC = () => {
   const { id } = useParams<ColetorProfileParams>();
   const coletorId = parseInt(id, 10);
   
-  // Busca os dados usando a função utilitária
+  
   const coletor = findColetorById(coletorId);
   const history = useHistory();
 
-  // Caso o coletor não seja encontrado
+  
   if (!coletor) {
     return (
       <IonPage>
@@ -71,10 +71,10 @@ const ColetorProfilePage: React.FC = () => {
     );
   }
 
-  // Se o coletor for encontrado, exibe o perfil
+  
   const yearsAffiliated = new Date().getFullYear() - coletor.afiliacaoDesde;
 
-  // 🟢 NOVA FUNÇÃO: Redireciona para a página de agendamento com o ID do coletor na rota
+  
   const handleAgendar = () => {
       history.push(`/app/agendamento/${coletor.id}`);
   };
@@ -94,7 +94,7 @@ const ColetorProfilePage: React.FC = () => {
 
       <IonContent fullscreen style={{ '--background': styles.lightBeige }}>
         
-        {/* --- Card de Cabeçalho do Perfil --- */}
+        
         <IonCard style={{ 
             borderRadius: '0 0 25px 25px', 
             margin: '0', 
@@ -140,7 +140,7 @@ const ColetorProfilePage: React.FC = () => {
         </IonCard>
 
         <div className="ion-padding">
-            {/* --- Seção de Biografia / Especialidade --- */}
+            
             <IonCard style={{ borderRadius: '15px', margin: '15px 0' }}>
                 <IonCardHeader>
                     <IonCardTitle style={{ color: styles.primaryGreen, fontSize: '1.2rem', fontWeight: 'bold' }}>
@@ -157,7 +157,7 @@ const ColetorProfilePage: React.FC = () => {
                 </IonCardContent>
             </IonCard>
 
-            {/* --- Detalhes de Contato e Afiliação --- */}
+            
             <IonCard style={{ borderRadius: '15px', margin: '15px 0' }}>
                 <IonItem lines="full">
                     <IonIcon icon={callOutline} slot="start" color="primary" />
@@ -193,7 +193,7 @@ const ColetorProfilePage: React.FC = () => {
                 </IonItem>
             </IonCard>
 
-            <div style={{ height: '30px' }} /> {/* Espaço no final */}
+            <div style={{ height: '30px' }} /> 
         </div>
 
       </IonContent>

@@ -12,49 +12,49 @@ import {
   IonLoading,
 } from '@ionic/react';
 import { menu } from 'ionicons/icons';
-// 💡 Importa a interface e os dados mockados de um arquivo central
+
 import { Coletor, mockColetores } from '../data/mockData'; 
 
-// --- Configuração Inicial do Ionic ---
+
 setupIonicReact();
 
-// --- Estilos Compartilhados ---
+
 const styles = {
   primaryGreen: '#387E5E',
   lightBeige: '#F5F5DC',
 };
 
-// --- Configuração do Google Maps ---
-// A chave deve ser fornecida pelo ambiente, mas para este ambiente de simulação, usaremos uma string vazia.
-const GOOGLE_MAPS_API_KEY = ""; 
-const MAP_ID = "YOUR_MAP_ID_HERE"; // Substitua pelo seu Map ID real, se usar estilos personalizados
 
-// --- 2. Componente da Página de Mapa (Pronto para Google Maps API) ---
+// Substituir
+const GOOGLE_MAPS_API_KEY = ""; 
+const MAP_ID = ""; 
+
+
 const MapPage: React.FC = () => {
-  // Referência para o contêiner onde o mapa será desenhado
+
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Ponto central do mapa (simulando a localização do usuário ou centro de Santos/SP)
+
   const defaultCenter = { lat: -23.9610, lng: -46.3323 }; 
   
-  // Função para injetar o script da API do Google Maps
+
   const loadGoogleMapsScript = () => {
-    // Verifica se o script já foi carregado
+
     if (document.getElementById('google-maps-script')) {
       return Promise.resolve();
     }
 
     return new Promise<void>((resolve) => {
       const script = document.createElement('script');
-      // Adiciona o parâmetro 'libraries' para garantir que as libs necessárias sejam carregadas (ex: geometry, places)
+
       script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap`;
       script.async = true;
       script.defer = true;
       script.id = 'google-maps-script';
       
-      // Define a função global que será chamada quando o script carregar
+
       (window as any).initMap = () => {
         console.log("Script do Google Maps carregado.");
         resolve();
@@ -64,10 +64,10 @@ const MapPage: React.FC = () => {
     });
   };
 
-  // Função para inicializar o mapa e adicionar os marcadores
+
   const initializeMap = async () => {
-    // Garante que o contêiner do mapa existe e o Google Maps está carregado
-    // A variável 'google' é global e injetada pelo script do Google Maps
+
+
     if (!mapRef.current || typeof google === 'undefined' || !google.maps.Map) {
       console.error("Contêiner do mapa não encontrado ou Google Maps não carregado.");
       setIsLoading(false);
@@ -75,10 +75,10 @@ const MapPage: React.FC = () => {
     }
 
     try {
-        // Opções de inicialização do mapa
+
         const mapOptions: google.maps.MapOptions = {
             center: defaultCenter,
-            zoom: 14, // Zoom padrão para uma vista local
+            zoom: 14, 
             mapTypeControl: false, 
             streetViewControl: false, 
             fullscreenControl: false, 
@@ -86,14 +86,14 @@ const MapPage: React.FC = () => {
             // mapId: MAP_ID, 
         };
 
-        // Cria a instância do mapa
+
         const newMap = new google.maps.Map(mapRef.current, mapOptions);
         setMap(newMap);
         
-        // Adiciona o marcador de Localização do Usuário (simulado)
+
         addCenterMarker(newMap, defaultCenter);
         
-        // Adiciona os marcadores dos Coletores
+
         addCollectorMarkers(newMap);
 
     } catch (error) {
@@ -103,36 +103,36 @@ const MapPage: React.FC = () => {
     }
   };
 
-  // Adiciona um marcador para a localização central (usuário)
+
   const addCenterMarker = (currentMap: google.maps.Map, position: google.maps.LatLngLiteral) => {
     new google.maps.Marker({
         position: position,
         map: currentMap,
         title: "Sua Localização (Simulada)",
         icon: {
-            // Ícone azul para o usuário
+
             url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
             scaledSize: new google.maps.Size(40, 40),
         },
     });
   };
 
-  // Adiciona marcadores para cada coletor
+
   const addCollectorMarkers = (currentMap: google.maps.Map) => {
-    // 💡 mockColetores agora vem do arquivo de dados
+
     mockColetores.forEach(coletor => {
         const marker = new google.maps.Marker({
             position: { lat: coletor.lat, lng: coletor.lng },
             map: currentMap,
             title: coletor.nome,
             icon: {
-                // Ícone verde para o coletor
+
                 url: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png',
                 scaledSize: new google.maps.Size(40, 40),
             },
         });
 
-        // Adiciona um InfoWindow ao clicar no marcador
+
         const infoWindow = new google.maps.InfoWindow({
             content: `
                 <div style="padding: 10px; font-family: Inter, sans-serif;">
@@ -151,20 +151,20 @@ const MapPage: React.FC = () => {
     });
   };
 
-  // Efeito principal para carregar o script e inicializar o mapa
+
   useEffect(() => {
     setIsLoading(true);
-    // Chamada para carregar o script do Google Maps
+
     loadGoogleMapsScript()
       .then(() => {
-        // Um pequeno delay garante que a função global 'initMap' foi totalmente processada pelo navegador
+
         setTimeout(initializeMap, 100); 
       })
       .catch(error => {
         console.error("Falha ao carregar script do Google Maps.", error);
         setIsLoading(false);
       });
-  }, []); // Executa apenas na montagem
+  }, []); 
 
   return (
     <IonPage>
@@ -182,17 +182,16 @@ const MapPage: React.FC = () => {
       </IonHeader>
       
       <IonContent fullscreen style={{ '--background': styles.lightBeige }}>
-        {/* Contêiner do Mapa */}
+
         <div ref={mapRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
-            {/* O Google Maps será injetado aqui */}
+
         </div>
 
-        {/* Loader visível enquanto o mapa carrega */}
         <IonLoading 
             isOpen={isLoading} 
             message="Carregando mapa e coletores..."
             spinner="crescent"
-            duration={5000} // Duração máxima para evitar loop infinito
+            duration={5000}
             style={{ 
                 '--backdrop-opacity': '0.3', 
                 '--background': '#ffffff', 
@@ -200,7 +199,7 @@ const MapPage: React.FC = () => {
             }}
         />
         
-        {/* Placeholder de erro caso o carregamento falhe */}
+
         {!isLoading && !map && (
              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', padding: '20px', backgroundColor: '#fff', borderRadius: '15px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
                 <p style={{ color: '#C5000F', fontWeight: 'bold' }}>⚠️ Falha ao carregar o Google Maps.</p>
